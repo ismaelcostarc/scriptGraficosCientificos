@@ -3,15 +3,18 @@
 #           ARQUIVOS E DIRETORIOS
 #
 ###########################################################
-setwd("~/Documentos")
-data <- read.csv("PBB.csv")
-cairo_pdf("PBB.pdf", 6, 6, bg="transparent")
+
+data <- read.csv("CSV/BaixoXT/NSFNET/PBB.csv")
+# 6, 6 são largura e altura, respectivamente
+cairo_pdf("Graficos/BaixoXT/NSFNET/PBB.pdf", 6, 6, bg="transparent")
 
 ###########################################################
+
 #
 #           PARÂMETROS
 #
 ###########################################################
+
 #quantidade de pontos de carga
 qLoads <- 7
 #Ponto de carga inicial
@@ -32,8 +35,14 @@ intervalSize <- 0.07
 #           CALCULOS
 #
 ###########################################################
+
 #valores dos pontos de carga
-loads <- seq(initialLoad,initialLoad+increment*qLoads,increment)
+loads <- seq(initialLoad,initialLoad+increment*(qLoads-1),increment)
+
+## Para curvas em que o limite inferior do intervalo de confiança ultrapasse
+## o valor mínimo da curva, é necessário calcular o valor mínimo de cada curva
+## para corrigir um bug (o intervalo de confiança desaparece nos pontos em que
+## isso ocorre)
 #Encontra o valor mínimo do PGNIE
 minpgnie <- 1
 for(i in 1:qLoads) {
@@ -74,19 +83,19 @@ for(i in 1:qLoads) {
   #Linha Vertical
   segments(
     i,
-    pgnie$mean[i] + pgnie$error[i],
+    data$PGNIE[i] + data$ERROPGNIE[i],
     i,
-    pgnie$mean[i] - pgnie$error[i],
+    data$PGNIE[i] - data$ERROPGNIE[i],
     col="black"
   )
   
   #Corrigir o erro para intervalos menores que o menor valor
-  if(pgnie$mean[i] - pgnie$error[i] <= minpgnie) {
+  if(data$PGNIE[i] - data$ERROPGNIE[i] <= minpgnie) {
     segments(
       i,
-      pgnie$mean[i] + pgnie$error[i],
+      data$PGNIE[i] + data$ERROPGNIE[i],
       i,
-      intervals[2],
+      yintervals[1],
       col="black"
     )
   }
@@ -94,18 +103,18 @@ for(i in 1:qLoads) {
   #Linha Horizontal Superior
   segments(
     i-intervalSize,
-    pgnie$mean[i] + pgnie$error[i],
+    data$PGNIE[i] + data$ERROPGNIE[i],
     i+intervalSize,
-    pgnie$mean[i] + pgnie$error[i],
+    data$PGNIE[i] + data$ERROPGNIE[i],
     col="black"
   )
   
   #Linha Horizontal Inferior
   segments(
     i-intervalSize,
-    pgnie$mean[i] - pgnie$error[i],
+    data$PGNIE[i] - data$ERROPGNIE[i],
     i+intervalSize,
-    pgnie$mean[i] - pgnie$error[i],
+    data$PGNIE[i] - data$ERROPGNIE[i],
     col="black"
   )
 }
@@ -125,19 +134,19 @@ for(i in 1:qLoads) {
   #Linha Vertical
   segments(
     i,
-    abne$mean[i] + abne$error[i],
+    data$ABNE[i] + data$ERROABNE[i],
     i,
-    abne$mean[i] - abne$error[i],
+    data$ABNE[i] - data$ERROABNE[i],
     col="black"
   )
   
   #Corrigir o erro para intervalos menores que o menor valor
-  if(abne$mean[i] - abne$error[i] <= minabne) {
+  if(data$ABNE[i] - data$ERROABNE[i] <= minabne) {
     segments(
       i,
-      abne$mean[i] + abne$error[i],
+      data$ABNE[i] + data$ERROABNE[i],
       i,
-      intervals[2],
+      yintervals[1],
       col="black"
     )
   }
@@ -145,18 +154,18 @@ for(i in 1:qLoads) {
   #Linha Horizontal Superior
   segments(
     i-intervalSize,
-    abne$mean[i] + abne$error[i],
+    data$ABNE[i] + data$ERROABNE[i],
     i+intervalSize,
-    abne$mean[i] + abne$error[i],
+    data$ABNE[i] + data$ERROABNE[i],
     col="black"
   )
   
   #Linha Horizontal Inferior
   segments(
     i-intervalSize,
-    abne$mean[i] - abne$error[i],
+    data$ABNE[i] - data$ERROABNE[i],
     i+intervalSize,
-    abne$mean[i] - abne$error[i],
+    data$ABNE[i] - data$ERROABNE[i],
     col="black"
   )
 }
@@ -176,27 +185,27 @@ for(i in 1:qLoads) {
   #Linha Vertical
   segments(
     i,
-    cprf$mean[i] + cprf$error[i],
+    data$CPRF[i] + data$ERROCPRF[i],
     i,
-    cprf$mean[i] - cprf$error[i],
+    data$CPRF[i] - data$ERROCPRF[i],
     col="black"
   )
   
   #Linha Horizontal Superior
   segments(
     i-intervalSize,
-    cprf$mean[i] + cprf$error[i],
+    data$CPRF[i] + data$ERROCPRF[i],
     i+intervalSize,
-    cprf$mean[i] + cprf$error[i],
+    data$CPRF[i] + data$ERROCPRF[i],
     col="black"
   )
   
   #Linha Horizontal Inferior
   segments(
     i-intervalSize,
-    cprf$mean[i] - cprf$error[i],
+    data$CPRF[i] - data$ERROCPRF[i],
     i+intervalSize,
-    cprf$mean[i] - cprf$error[i],
+    data$CPRF[i] - data$ERROCPRF[i],
     col="black"
   )
 }
@@ -216,27 +225,27 @@ for(i in 1:qLoads) {
   #Linha Vertical
   segments(
     i,
-    rcff$mean[i] + rcff$error[i],
+    data$RCFF[i] + data$ERRORCFF[i],
     i,
-    rcff$mean[i] - rcff$error[i],
+    data$RCFF[i] - data$ERRORCFF[i],
     col="black"
   )
   
   #Linha Horizontal Superior
   segments(
     i-intervalSize,
-    rcff$mean[i] + rcff$error[i],
+    data$RCFF[i] + data$ERRORCFF[i],
     i+intervalSize,
-    rcff$mean[i] + rcff$error[i],
+    data$RCFF[i] + data$ERRORCFF[i],
     col="black"
   )
   
   #Linha Horizontal Inferior
   segments(
     i-intervalSize,
-    rcff$mean[i] - rcff$error[i],
+    data$RCFF[i] - data$ERRORCFF[i],
     i+intervalSize,
-    rcff$mean[i] - rcff$error[i],
+    data$RCFF[i] - data$ERRORCFF[i],
     col="black"
   )
 }
