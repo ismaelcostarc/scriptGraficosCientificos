@@ -4,12 +4,17 @@
 #
 ###########################################################
 
-data <- read.csv("CSV/BaixoXT/NSFNET/PBB.csv")
+blocking <- "PBC"
+topology <- "NSFNET"
+xt <- "AXT"
+
+#Diretório e nome dos arquivos .csv e .pdf
+name <- paste(xt, topology, paste(blocking, topology, xt, sep=''), sep='/')
+data <- read.csv(paste("CSV/", name, ".csv", sep=''))
 # 6, 6 são largura e altura, respectivamente
-cairo_pdf("Graficos/BaixoXT/NSFNET/PBB.pdf", 6, 6, bg="transparent")
+cairo_pdf(paste("Graficos/", name, ".pdf", sep=''), 6, 6, bg="transparent")
 
 ###########################################################
-
 #
 #           PARÂMETROS
 #
@@ -22,13 +27,21 @@ initialLoad <- 750
 #Incremento de carga
 increment <- 100
 #Ponto mínimo e máximo do eixo y
-yintervals <- c(10E-7, 0.1)
-ylabel <- "Probabilidade de bloqueio de banda"
-#ylabel <- "Probabilidade de bloqueio de circuito"
-#ylabel <- "Eficiência Energética"
+yintervals <- c(10E-7, 1)
+
+if(blocking == "PBB") {
+  ylabel <- "Probabilidade de bloqueio de banda"
+} else {
+  ylabel <- "Probabilidade de bloqueio de circuito"
+}
+
 xlabel <- "Carga(Erlangs)"
 #Tamanho da borda da reta do intervalo de confiança
 intervalSize <- 0.07
+#Posição da legenda (left, right, top, bottom, bottomright, bottomleft...)
+legendPosition <- "bottomright"
+#Corrigir erro do intervalo de confiança que acontece em alguns gráficos
+errorConfInt=TRUE
 
 ###########################################################
 #
@@ -44,21 +57,21 @@ loads <- seq(initialLoad,initialLoad+increment*(qLoads-1),increment)
 ## para corrigir um bug (o intervalo de confiança desaparece nos pontos em que
 ## isso ocorre)
 #Encontra o valor mínimo do PGNIE
-minpgnie <- 1
-for(i in 1:qLoads) {
-  if(data$PGNIE[i] < minpgnie && data$PGNIE[i] != 0)
-    minpgnie <- data$PGNIE[i]
-}
-
-#Encontra o valor mínimo do ABNE
-minabne <- 1
-for(i in 1:qLoads) {
-  if(data$ABNE[i] < minabne && data$ABNE[i] != 0)
-    minabne <- data$ABNE[i]
-}
+# minpgnie <- 1
+# for(i in 1:qLoads) {
+#   if(data$PGNIE[i] < minpgnie && data$PGNIE[i] != 0)
+#     minpgnie <- data$PGNIE[i]
+# }
+# 
+# #Encontra o valor mínimo do ABNE
+# minabne <- 1
+# for(i in 1:qLoads) {
+#   if(data$ABNE[i] < minabne && data$ABNE[i] != 0)
+#     minabne <- data$ABNE[i]
+# }
 
 #Margens do grafico
-par(mar = c(5.2, 5.5, 1.3, 0.4))
+par(mar = c(5.5, 5.5, 1.3, 0.4))
 plot(data$PGNIE,
      type="l",
      xaxt="n",
@@ -71,8 +84,13 @@ plot(data$PGNIE,
      xlab="",
      ylab="")
 
-legend("left", legend=c("PGNIE", "ABNE", "CP-RF", "RC-FF"),
-       lty=c(1,1,1,1), col=c("blue", "red", "green", "purple"), bty="n", lwd=1:2, cex=1.3)
+legend(legendPosition,
+       legend=c("PGNIE", "ABNE", "CP-RF", "RC-FF"),
+       lty=c(1,1,1,1), 
+       col=c("blue", "red", "green", "purple"),
+       bty="n",
+       #horiz=TRUE,
+       cex=1.2)
 
 #Rótulos dos eixos
 title(ylab=ylabel, mgp=c(4,1,0),cex.lab=1.5)
@@ -90,7 +108,7 @@ for(i in 1:qLoads) {
   )
   
   #Corrigir o erro para intervalos menores que o menor valor
-  if(data$PGNIE[i] - data$ERROPGNIE[i] <= minpgnie) {
+  if(data$PGNIE[i] - data$ERROPGNIE[i] <= yintervals[1] && errorConfInt) {
     segments(
       i,
       data$PGNIE[i] + data$ERROPGNIE[i],
@@ -141,7 +159,7 @@ for(i in 1:qLoads) {
   )
   
   #Corrigir o erro para intervalos menores que o menor valor
-  if(data$ABNE[i] - data$ERROABNE[i] <= minabne) {
+  if(data$ABNE[i] - data$ERROABNE[i] <= yintervals[1] && errorConfInt) {
     segments(
       i,
       data$ABNE[i] + data$ERROABNE[i],
